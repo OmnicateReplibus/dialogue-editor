@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3 uid="uid://cjgrc3yqlgnun"]
+
+[ext_resource type="Script" uid="uid://cjhdthppfci2t" path="res://Scripts/main.gd" id="1_r150o"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_r150o")
+
+[node name="GraphEdit" type="GraphEdit" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 35.0
+grow_horizontal = 2
+grow_vertical = 2
+right_disconnects = true
+show_arrange_button = false
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Add Node +"
+
+[node name="SaveButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 105.0
+offset_right = 149.0
+offset_bottom = 31.0
+text = "Save"
+
+[node name="LoadButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 156.0
+offset_right = 202.0
+offset_bottom = 31.0
+text = "Load"
+
+[connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
+[connection signal="disconnection_request" from="GraphEdit" to="." method="_on_graph_edit_disconnection_request"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="SaveButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="LoadButton" to="." method="_on_load_button_pressed"]
