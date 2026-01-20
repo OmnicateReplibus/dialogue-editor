@@ -63,19 +63,38 @@ func save_data(file_name: String) -> void:
 			node_data.name = node.name
 			node_data.title = node.title
 			node_data.position_offset = node.position_offset
-			node_data.connections = graph_edit.get_connection_list_from_node(
-																	node.name)
 			graph_data.nodes.append(node_data)
+	graph_data.connections = graph_edit.connections
+			
+		
 	if ResourceSaver.save(graph_data, file_name) == OK:
 		print("saved")
 	else:
 		print("Error saving graph_data")
+		
+func init_graph(graph_data: GraphData) -> void:
+	clear_graph()
+	for node in graph_data.nodes:
+		# Get new node from factory autoload (singleton)
+		var gnode : Node = sgn.instantiate()
+		gnode.position_offset = node.position_offset
+		gnode.name = node.name
+		gnode.title = node.title
+		graph_edit.add_child(gnode,true)
+		node_index += 1
+		print(graph_edit.get_child(node_index))
+	print(graph_data.connections)
+	for con in graph_data.connections:
+		var _e = graph_edit.connect_node(con.from_node, 
+		 	con.from_port, con.to_node, con.to_port, con.keep_alive)
+		print(error_string(_e))
 		
 func load_data(file_name: String) -> void:
 	if ResourceLoader.exists(file_name):
 		@warning_ignore("untyped_declaration")
 		var graph_data = ResourceLoader.load(file_name)
 		if graph_data is GraphData:
+			
 			init_graph(graph_data)
 		else:
 			# Error loading data
@@ -84,28 +103,13 @@ func load_data(file_name: String) -> void:
 		# File not found
 		pass
 		
-func init_graph(graph_data: GraphData) -> void:
-	clear_graph()
-	var connections : Array
-	for node : Resource in graph_data.nodes:
-		# Get new node from factory autoload (singleton)
-		var gnode : Node = sgn.instantiate()
-		gnode.position_offset = node.position_offset
-		gnode.name = node.name
-		gnode.title = node.title
-		get_node(graph_edit_path).add_child(gnode,true)
-		node_index += 1
-		print(get_node(graph_edit_path).get_child(node_index))
-		connections.append_array(node.connections)
-	print(connections)
-	for con : Dictionary in connections:
-		var _e : int = get_node(graph_edit_path).connect_node(con.from_node, 
-		 	con.from_port, con.to_node, con.to_port, false)
 			
 func clear_graph() -> void:
-	get_node(graph_edit_path).clear_connections()
-	var nodes : Array = get_node(graph_edit_path).get_children()
+	graph_edit.clear_connections()
+	
+	var nodes : Array = graph_edit.get_children()
 	for node : Node in nodes:
 		if node is GraphNode:
+			graph_edit.remove_child(node)
 			node.queue_free()
 	node_index = 0
