@@ -9,13 +9,14 @@ var node_index : int = 0
 func _ready() -> void:
 	pass
 
-func _on_button_pressed() -> void: 						# create node
-	var node : Node = sgn.instantiate() 				# instantiate node
+func _on_button_pressed() -> void: 						
+	var node : Node = sgn.instantiate() 	
+	node.name = "SGN" + str(node_index)+"#"
+	node_index += 1 									
 	node.position_offset += graph_edit.scroll_offset + \
-		(get_viewport_rect().size / 5) 					# apply offset
-	node.title += " "+str(node_index)					# increment node title
-	graph_edit.add_child(node) 							# add to graph
-	node_index += 1 									# increment node index
+		(get_viewport_rect().size / 5) 					
+	node.title += " "+str(node_index)					
+	graph_edit.add_child(node) 							
 
 func _on_graph_edit_connection_request(from_node: StringName, from_port: int, 
 		to_node: StringName, to_port: int) -> void:
@@ -74,15 +75,16 @@ func save_data(file_name: String) -> void:
 		
 func init_graph(graph_data: GraphData) -> void:
 	clear_graph()
+	node_index = 0
 	for node in graph_data.nodes:
 		# Get new node from factory autoload (singleton)
 		var gnode : Node = sgn.instantiate()
 		gnode.position_offset = node.position_offset
-		gnode.name = node.name
+		gnode.name = StringName(node.name)
 		gnode.title = node.title
 		graph_edit.add_child(gnode,true)
 		node_index += 1
-		print(graph_edit.get_child(node_index))
+		prints(gnode.name)
 	print(graph_data.connections)
 	for con in graph_data.connections:
 		var _e = graph_edit.connect_node(con.from_node, 
