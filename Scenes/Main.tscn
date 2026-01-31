@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://cjgrc3yqlgnun"]
+[gd_scene load_steps=4 format=3 uid="uid://cjgrc3yqlgnun"]
 
 [ext_resource type="Script" uid="uid://cjhdthppfci2t" path="res://Scripts/main.gd" id="1_r150o"]
+[ext_resource type="PackedScene" uid="uid://rvm860n2yqxb" path="res://Scenes/ConfirmationModal.tscn" id="2_idj7w"]
+[ext_resource type="PackedScene" uid="uid://cauoffqatmj2q" path="res://Scenes/RightClickNodeMenu.tscn" id="3_kln2b"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -42,7 +44,14 @@ offset_right = 202.0
 offset_bottom = 31.0
 text = "Load"
 
+[node name="ConfirmationModal" parent="." instance=ExtResource("2_idj7w")]
+layout_mode = 1
+
+[node name="RightClickNodeMenu" parent="." instance=ExtResource("3_kln2b")]
+layout_mode = 0
+
 [connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
+[connection signal="connection_to_empty" from="GraphEdit" to="." method="_on_graph_edit_connection_to_empty"]
 [connection signal="disconnection_request" from="GraphEdit" to="." method="_on_graph_edit_disconnection_request"]
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="SaveButton" to="." method="_on_save_button_pressed"]

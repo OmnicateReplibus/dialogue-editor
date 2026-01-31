@@ -2,7 +2,6 @@ extends GraphNode
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	#name = "SGN" + str(get_parent().get_parent().node_index)+"#"
 	set_slot(0, true, 0, Color(1,1,1), true, 0, Color(0,1,0))
 		# slot management
 

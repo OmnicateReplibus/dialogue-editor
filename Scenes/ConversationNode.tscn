@@ -1,12 +1,12 @@
 [gd_scene load_steps=2 format=3 uid="uid://bu6kbfoneimbs"]
 
-[ext_resource type="Script" uid="uid://h2tes44uli0n" path="res://Scripts/SimpleGraphNode.gd" id="1_obbss"]
+[ext_resource type="Script" uid="uid://h2tes44uli0n" path="res://Scripts/ConversationNode.gd" id="1_rvdx7"]
 
 [node name="GraphNode" type="GraphNode"]
 offset_right = 388.0
 offset_bottom = 110.0
 resizable = true
-title = "SimpleNode"
+title = "ConversationNode"
 slot/0/left_enabled = false
 slot/0/left_type = 0
 slot/0/left_color = Color(1, 1, 1, 1)
@@ -16,7 +16,25 @@ slot/0/right_type = 0
 slot/0/right_color = Color(1, 1, 1, 1)
 slot/0/right_icon = null
 slot/0/draw_stylebox = true
-script = ExtResource("1_obbss")
+slot/1/left_enabled = false
+slot/1/left_type = 0
+slot/1/left_color = Color(1, 1, 1, 1)
+slot/1/left_icon = null
+slot/1/right_enabled = false
+slot/1/right_type = 0
+slot/1/right_color = Color(1, 1, 1, 1)
+slot/1/right_icon = null
+slot/1/draw_stylebox = true
+slot/2/left_enabled = false
+slot/2/left_type = 0
+slot/2/left_color = Color(1, 1, 1, 1)
+slot/2/left_icon = null
+slot/2/right_enabled = false
+slot/2/right_type = 0
+slot/2/right_color = Color(1, 1, 1, 1)
+slot/2/right_icon = null
+slot/2/draw_stylebox = true
+script = ExtResource("1_rvdx7")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -36,5 +54,17 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Inherit Speaker?"
 
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Dialogue"
+
+[node name="TextEdit" type="TextEdit" parent="."]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+placeholder_text = "Dialogue Go Here"
+wrap_mode = 1
+scroll_fit_content_height = true
+
 [connection signal="delete_request" from="." to="." method="_on_delete_request"]
 [connection signal="resize_request" from="." to="." method="_on_resize_request"]
+[connection signal="slot_sizes_changed" from="." to="." method="_on_slot_sizes_changed"]
