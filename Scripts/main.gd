@@ -2,6 +2,7 @@ extends Control
 
 var con_node : Resource = load("res://Scenes/ConversationNode.tscn")
 var node_index : int = 0
+var con_node_offset : Vector2 = Vector2(0,-90)
 
 @onready var graph_edit : GraphEdit = $GraphEdit
 @onready var graph_edit_path : NodePath = graph_edit.get_path()
@@ -13,7 +14,7 @@ var node_index : int = 0
 @onready var right_click_menu : Control = $RightClickNodeMenu
 
 func _on_button_pressed() -> void: 						
-	create_node("con_node", get_viewport_rect().size / 5)			
+	create_node("con_node", get_viewport_rect().size / 2)			
 
 func _on_graph_edit_connection_request(from_node: StringName, from_port: int, 
 		to_node: StringName, to_port: int) -> void:
@@ -45,8 +46,7 @@ func _on_graph_edit_disconnection_request(from_node: StringName, from_port: int,
 														# disconnect them nodes				
 func _on_graph_edit_connection_to_empty(from_node: StringName, from_port: int, 
 			release_position: Vector2) -> void:
-	var new_node : StringName = create_node("con_node", release_position + 
-															Vector2(0,-75)).name
+	var new_node : StringName = create_node("con_node", release_position).name
 	graph_edit.connect_node(from_node, from_port, new_node, 0)
 	speaker_inheritance_check(from_node, new_node)
 	
@@ -61,7 +61,9 @@ func create_node(node_type : String, position_offset : Vector2) -> Node:
 		node = con_node.instantiate() 	
 		node.name = "CN" + str(node_index)+"#"
 		node_index += 1 									
-		node.position_offset += graph_edit.scroll_offset + position_offset					
+		node.position_offset += ((graph_edit.scroll_offset + position_offset
+			) / graph_edit.zoom) + con_node_offset
+		# change the node offset based on node type
 		node.title += " "+str(node_index)	
 	graph_edit.add_child(node)
 	return node

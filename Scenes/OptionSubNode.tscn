@@ -1,0 +1,50 @@
+[gd_scene load_steps=3 format=3 uid="uid://c5l3kqjtcguqw"]
+
+[ext_resource type="StyleBox" uid="uid://b5k32edggjjg" path="res://Styles/OptionSubNode.tres" id="1_a5lht"]
+[ext_resource type="Script" uid="uid://dm05vj284m52a" path="res://Scripts/option_sub_node.gd" id="2_t118c"]
+
+[node name="PanelContainer" type="PanelContainer"]
+offset_right = 280.0
+offset_bottom = 176.0
+theme_override_styles/panel = ExtResource("1_a5lht")
+script = ExtResource("2_t118c")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="choice_text" type="TextEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "Choice Text"
+wrap_mode = 1
+scroll_fit_content_height = true
+scroll_fit_content_width = true
+
+[node name="condition" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Condition?"
+
+[node name="condition_text" type="LineEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+placeholder_text = "Condition"
+
+[node name="hide_if_not_met" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Hide option if condition not met "
+
+[node name="replace_hidden" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Replace hidden option"
+
+[node name="replacement_text" type="TextEdit" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+placeholder_text = "Replacement text"
+scroll_fit_content_height = true
+scroll_fit_content_width = true
+
+[connection signal="toggled" from="VBoxContainer/condition" to="." method="_on_condition_toggled"]
+[connection signal="toggled" from="VBoxContainer/hide_if_not_met" to="." method="_on_hide_if_not_met_toggled"]
+[connection signal="toggled" from="VBoxContainer/replace_hidden" to="." method="_on_replace_hidden_toggled"]

@@ -1,0 +1,5 @@
+[gd_resource type="Theme" format=3 uid="uid://bowhi1nhnexdt"]
+
+[resource]
+CheckBox/colors/font_color = Color(0.8745098, 0.8745098, 0.8745098, 0.27450982)
+Label/colors/font_color = Color(0.47918278, 0.47918278, 0.47918278, 1)
