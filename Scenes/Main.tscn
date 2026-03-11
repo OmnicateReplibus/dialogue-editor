@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cjhdthppfci2t" path="res://Scripts/main.gd" id="1_r150o"]
 [ext_resource type="PackedScene" uid="uid://cauoffqatmj2q" path="res://Scenes/RightClickNodeMenu.tscn" id="3_kln2b"]
+[ext_resource type="PackedScene" uid="uid://rvm860n2yqxb" path="res://Scenes/ConfirmationModal.tscn" id="3_rgh2o"]
 
 [node name="Main" type="Control" unique_id=982356435]
 layout_mode = 3
@@ -48,11 +49,16 @@ layout_mode = 0
 [node name="SaveAs" type="FileDialog" parent="." unique_id=498212384]
 oversampling_override = 1.0
 initial_position = 1
+size = Vector2i(1280, 800)
 
 [node name="Load" type="FileDialog" parent="." unique_id=1426479064]
 title = "Open a File"
 initial_position = 1
+size = Vector2i(1280, 800)
 file_mode = 0
+
+[node name="NewFileModal" parent="." unique_id=1986770347 instance=ExtResource("3_rgh2o")]
+layout_mode = 1
 
 [connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
 [connection signal="connection_to_empty" from="GraphEdit" to="." method="_on_graph_edit_connection_to_empty"]

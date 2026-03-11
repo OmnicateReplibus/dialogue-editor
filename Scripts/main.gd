@@ -25,6 +25,7 @@ var con_node_offset : Vector2 = Vector2(0,-90)
 @onready var sp_l_ed : NodePath = "VBoxContainer/HBoxContainer/SpeakerLineEdit"
 
 # modals
+@onready var new_file_modal : Control = $NewFileModal
 @onready var right_click_menu : Control = $RightClickNodeMenu
 
 @onready var file_menu : PopupMenu = $MenuBar/FileMenu
@@ -32,13 +33,19 @@ var con_node_offset : Vector2 = Vector2(0,-90)
 
 @onready var save_as_modal : FileDialog = $SaveAs
 @onready var load_modal : FileDialog = $Load
+@onready var default_path : String = "res://SaveData/"
 @onready var current_save_path : String = ""
 
 func _ready() -> void:
-	save_as_modal.current_dir = "res://"
+	save_as_modal.current_dir = default_path
+	load_modal.current_dir = default_path
 	file_menu.id_pressed.connect(file_menu_bhvr)
 	for i : String in file_menu_options:
 		file_menu.add_item(i)
+		
+func _input(event: InputEvent) -> void:
+	if event.is_action("SaveShortcut"):
+		general_case_save()
 
 func _on_button_pressed() -> void: 						
 	var new_node : Node = create_node("con_node", get_viewport_rect().size / 2)
@@ -110,19 +117,26 @@ func _on_graph_edit_delete_nodes_request(nodes: Array[StringName]) -> void:
 
 func file_menu_bhvr(id : int) -> void:
 	if id == 0:
-		print("New")
+		var bhvr : int = await new_file_modal.prompt(true)
+		if bhvr == 0:
+			general_case_save()
+		if bhvr in [0,1]:
+			clear_graph()
+			current_save_path = ""
 	elif id == 1:
-		# Save
-		if current_save_path == "":
-			save_as_modal.show()
-		else:
-			save_data(current_save_path)
+		general_case_save()
 	elif id == 2:
 		# Save As
 		save_as_modal.show()
 	elif id == 3:
 		# Load
 		load_modal.show()
+		
+func general_case_save() -> void:
+	if current_save_path == "":
+		save_as_modal.show()
+	else:
+		save_data(current_save_path)
 			
 func _on_save_as_file_selected(path: String) -> void:
 	if path.right(4) != ".res":
@@ -132,8 +146,9 @@ func _on_save_as_file_selected(path: String) -> void:
 		save_as_modal.hide()
 		
 func _on_load_file_selected(path: String) -> void:
-	current_save_path = path
-	load_data(path)
+	if load_data(path):
+		current_save_path = path
+		load_modal.hide()
 
 # SAVE
 
@@ -148,10 +163,10 @@ func save_data(file_name: String) -> bool:
 	graph_data.connections = graph_edit.connections
 	graph_data.node_index = node_index
 	if ResourceSaver.save(graph_data, file_name) == OK:
-		print("saved")
+		print("Graph saved successfully")
 		return true
 	else:
-		print("Error saving graph_data")
+		push_error("Error saving graph_data")
 		return false
 		
 func read_node_data(node : Node) -> NodeData:
@@ -193,21 +208,23 @@ func clear_graph() -> void:
 			node.queue_free()
 	node_index = 0
 	total_nodes = 0
+	graph_edit.scroll_offset = Vector2(0,0)
 
 # LOAD
 
-func load_data(file_name: String) -> void:
+func load_data(file_name: String) -> bool:
 	if ResourceLoader.exists(file_name):
 		@warning_ignore("untyped_declaration")
 		var graph_data = ResourceLoader.load(file_name)
 		if graph_data is GraphData:
 			init_graph(graph_data)
+			return true
 		else:
-			# Error loading data
-			pass
+			push_error("Error loading data")
+			return false
 	else:
-		# File not found
-		pass
+		push_warning("File not found")
+		return false
 
 func init_graph(graph_data: GraphData) -> void:								 # okay
 																			 # are you ready for the pain?
@@ -253,8 +270,6 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 	for con : Dictionary in graph_data.connections:
 		var _e : int = graph_edit.connect_node(con.from_node, 
 		 	con.from_port, con.to_node, con.to_port, con.keep_alive)
-	print(total_nodes)
-	print(node_index)
 
 func write_choice_data(osn : PanelContainer, data : Dictionary) -> void:
 	# osn = option_sub_node

@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://rvm860n2yqxb"]
+[gd_scene format=3 uid="uid://rvm860n2yqxb"]
 
 [ext_resource type="Script" uid="uid://btklfdiwgncd1" path="res://Scripts/confirmation_modal.gd" id="1_mf5cn"]
 
-[node name="ConfirmationModal" type="Control"]
+[node name="ConfirmationModal" type="Control" unique_id=608655252]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mf5cn")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1613079937]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.21176471, 0.21176471, 0.21176471, 0.6)
 
-[node name="Modal" type="PanelContainer" parent="."]
+[node name="Modal" type="PanelContainer" parent="." unique_id=953735591]
 custom_minimum_size = Vector2(128, 64)
 layout_mode = 1
 anchors_preset = 8
@@ -31,41 +31,42 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Modal"]
+[node name="MarginContainer" type="MarginContainer" parent="Modal" unique_id=440666280]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 12
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Modal/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Modal/MarginContainer" unique_id=1644162920]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="HeaderLabel" type="Label" parent="Modal/MarginContainer/VBoxContainer"]
+[node name="HeaderLabel" type="Label" parent="Modal/MarginContainer/VBoxContainer" unique_id=2040969740]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Confirm load"
+text = "Save your current graph?"
 
-[node name="MessageLabel" type="Label" parent="Modal/MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "lmao"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="Modal/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Modal/MarginContainer/VBoxContainer" unique_id=1401912617]
 layout_mode = 2
 size_flags_vertical = 8
 alignment = 1
 
-[node name="ConfirmButton" type="Button" parent="Modal/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="YesButton" type="Button" parent="Modal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=849581991]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 8
 theme_override_font_sizes/font_size = 10
-text = "Confirm"
+text = "Yes"
 
-[node name="CancelButton" type="Button" parent="Modal/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="NoButton" type="Button" parent="Modal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=536992834]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "No"
+
+[node name="CancelButton" type="Button" parent="Modal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1588172969]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 6
