@@ -14,8 +14,6 @@ func _ready() -> void:
 	replace_check_box.hide()
 	replace_text_box.hide()
 
-# TODO: add a function to check what should be displayed on a load
-
 func _on_condition_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		condition_text_box.show()

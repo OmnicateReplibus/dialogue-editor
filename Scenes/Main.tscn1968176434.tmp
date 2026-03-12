@@ -19,7 +19,6 @@ offset_right = 40.0
 offset_bottom = 35.0
 
 [node name="FileMenu" type="PopupMenu" parent="MenuBar" unique_id=1692719969]
-oversampling_override = 1.0
 title = "File"
 
 [node name="GraphEdit" type="GraphEdit" parent="." unique_id=311309982]
@@ -52,7 +51,6 @@ size = Vector2i(1280, 800)
 file_mode = 0
 
 [node name="NewFileModal" parent="." unique_id=1986770347 instance=ExtResource("3_rgh2o")]
-visible = false
 layout_mode = 1
 
 [node name="Buttons" type="Control" parent="." unique_id=997592188]
@@ -72,9 +70,8 @@ layout_mode = 0
 offset_left = 265.0
 offset_right = 416.00006
 offset_bottom = 31.0
-text = "Add Action Node"
+text = "Add Action Node +"
 
-[connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
 [connection signal="connection_to_empty" from="GraphEdit" to="." method="_on_graph_edit_connection_to_empty"]
 [connection signal="delete_nodes_request" from="GraphEdit" to="." method="_on_graph_edit_delete_nodes_request"]

@@ -4,6 +4,7 @@ extends Control
 
 var con_node : Resource = load("res://Scenes/ConversationNode.tscn")
 var con_node_op : Resource = load("res://Scenes/OptionSubNode.tscn")
+var act_node : Resource = load("res://Scenes/ActionNode.tscn")
 
 # this ensures there are never any node-naming conflicts
 # by giving each node a unique identifier
@@ -16,8 +17,9 @@ var node_index : int = 0
 var total_nodes : int = 0
 
 # the offset for nodes appearing at the cursor
-# should be roughly half the height of the con_node without any op_subs
+# should be roughly half the height of the node (without any op_subs)
 var con_node_offset : Vector2 = Vector2(0,-90)
+var act_node_offset : Vector2 = Vector2(0,-40)
 
 @onready var graph_edit : GraphEdit = $GraphEdit
 @onready var graph_edit_path : NodePath = graph_edit.get_path()
@@ -42,7 +44,6 @@ var con_node_offset : Vector2 = Vector2(0,-90)
 func _ready() -> void:
 	save_as_modal.current_dir = default_path
 	load_modal.current_dir = default_path
-	file_menu.id_pressed.connect(file_menu_bhvr)
 	for i : String in file_menu_options:
 		file_menu.add_item(i)
 		
@@ -50,9 +51,14 @@ func _input(event: InputEvent) -> void:
 	if event.is_action("SaveShortcut"):
 		general_case_save()
 
-func _on_button_pressed() -> void: 						
-	var new_node : Node = create_node("con_node", get_viewport_rect().size / 2)
-	new_node.remove_connections.connect(remove_connections.bind(new_node))
+func _on_add_con_button_pressed() -> void: 						
+	var new_con_node : Node = create_node("con_node", 
+		get_viewport_rect().size / 2)
+	new_con_node.remove_connections.connect(
+		remove_connections.bind(new_con_node))
+	
+func _on_add_act_node_pressed() -> void:
+	create_node("act_node", get_viewport_rect().size / 2)
 	
 func remove_connections(node : GraphNode) -> void:
 	if node.get_child_count() > 2:
@@ -67,24 +73,26 @@ func remove_connections(node : GraphNode) -> void:
 func _on_graph_edit_connection_request(from_node: StringName, from_port: int, 
 		to_node: StringName, to_port: int) -> void:
 	graph_edit.connect_node(from_node, from_port, to_node, to_port)
-														# connect them nodes
-	speaker_inheritance_check(from_node, to_node)	
+														# connect them nodes=
+	speaker_inheritance_check(from_node, to_node)
 
 func speaker_inheritance_check(from_node : StringName, 
 		to_node : StringName) -> void:
-	if graph_edit.get_node(
-		NodePath(from_node)).get_node(inh_speaker_box).button_pressed:
-	# if the inherit speaker button is checked:
-		var speaker_name : String = graph_edit.get_node(	
-			NodePath(from_node)).get_node(sp_l_ed).text
-				# get speaker name of initial node
-		graph_edit.get_node(	
-			NodePath(to_node)).get_node(sp_l_ed).text = speaker_name
-				# set speaker name of connecting node to it
-		graph_edit.get_node(	
-			NodePath(to_node)).get_node(inh_speaker_box).button_pressed = true
-				# set inherit speaker of next node to true too
-				# the chain must grow
+	if from_node.left(1) == "C":
+		if graph_edit.get_node(
+			NodePath(from_node)).get_node(inh_speaker_box).button_pressed:
+		# if the inherit speaker button is checked:
+			var speaker_name : String = graph_edit.get_node(	
+				NodePath(from_node)).get_node(sp_l_ed).text
+					# get speaker name of initial node
+			graph_edit.get_node(	
+				NodePath(to_node)).get_node(sp_l_ed).text = speaker_name
+					# set speaker name of connecting node to it
+			graph_edit.get_node(	
+				NodePath(to_node)).get_node(
+					inh_speaker_box).button_pressed = true
+					# set inherit speaker of next node to true too
+					# the chain must grow
 				
 	# TODO: tidy this ^ up, remove repeated paths to the tickboxes and lineedits
 
@@ -102,11 +110,15 @@ func create_node(node_type : String, position_offset : Vector2) -> Node:
 	var node : Node 
 	if node_type == "con_node":
 		node = con_node.instantiate() 	
-		node.name = "CN" + str(node_index)+"#"
-		node_index += 1 									
+		node.name = "CN" + str(node_index)								
 		node.position_offset += ((graph_edit.scroll_offset + position_offset
 			) / graph_edit.zoom) + con_node_offset
-		# change the node offset based on node type
+	elif node_type == "act_node":
+		node = act_node.instantiate()
+		node.name = "AN" + str(node_index)	
+		node.position_offset += ((graph_edit.scroll_offset + position_offset
+			) / graph_edit.zoom) + act_node_offset
+	node_index += 1 
 	graph_edit.add_child(node)
 	total_nodes += 1
 	return node
@@ -114,11 +126,11 @@ func create_node(node_type : String, position_offset : Vector2) -> Node:
 func _on_graph_edit_delete_nodes_request(nodes: Array[StringName]) -> void:
 	total_nodes -= len(nodes)
 
-# SAVING AND LOADING #
+# SAVING, LOADING & EXPORTING #
 
 # MENU
 
-func file_menu_bhvr(id : int) -> void:
+func _on_file_menu_id_pressed(id: int) -> void:
 	if id == 0:
 		# New
 		var bhvr : int = await new_file_modal.prompt(true)
@@ -166,7 +178,6 @@ func save_data(file_name: String) -> bool:
 		if node is GraphNode:
 			var node_data : NodeData = read_node_data(node)
 			graph_data.nodes.append(node_data)
-			# also save type of node
 	graph_data.connections = graph_edit.connections
 	graph_data.node_index = node_index
 	if ResourceSaver.save(graph_data, file_name) == OK:
@@ -178,24 +189,22 @@ func save_data(file_name: String) -> bool:
 		
 func read_node_data(node : Node) -> NodeData:
 	var node_data : NodeData = NodeData.new()
-	var choice_data : Array = []
 	node_data.name = node.name
-	node_data.title = node.title
+	node_data.title = node.titlez
 	node_data.position_offset = node.position_offset
-	node_data.speaker = node.speaker_line_edit.text
-	node_data.inherit_speaker = node.inherit_speaker_check.button_pressed
-	node_data.speaker_text = node.node_text.text
-	
-	@warning_ignore("inferred_declaration")
-	for i in node.get_children():
-		if i is PanelContainer:
-			choice_data.append(read_choice_data(i))
-	node_data.choices = choice_data
+	if node_data.name == "ConversationNode":
+		var choice_data : Array = []
+		node_data.speaker = node.speaker_line_edit.text
+		node_data.inherit_speaker = node.inherit_speaker_check.button_pressed
+		node_data.speaker_text = node.node_text.text
+		for i : Node in node.get_children():
+			if i is PanelContainer:
+				choice_data.append(read_choice_data(i))
+		node_data.choices = choice_data
+	elif node_data.name == "ActionNode":
+		node_data.action_string = node.condition_box.text
 	
 	return node_data
-	
-	# TODO: introduce node types, make it possible to save/load
-	# other types of nodes
 
 func read_choice_data(osn : PanelContainer) -> Dictionary:
 	# osn = option_sub_node
@@ -240,37 +249,46 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 	node_index = graph_data.node_index
 	
 	for node : Resource in graph_data.nodes: 									 # then we check the save for each saved node...
-		var gnode : Node = con_node.instantiate()								 # ...and instance a new node for each one, which we will fill with data
-		gnode.remove_connections.connect(remove_connections.bind(gnode))		 # don't forget to hook it up to the signal!
+		var gnode : Node 
+		if node.title == "ConversationNode":
+			gnode = con_node.instantiate()								 	 # ...and instance a new node for each one, which we will fill with data
+			gnode.remove_connections.connect(remove_connections.bind(gnode))	 # don't forget to hook it up to the signal!
+		elif node.title == "ActionNode":
+			gnode = act_node.instantiate()
 		
 		gnode.position_offset = node.position_offset							 # we begin with the basic stuff....
 		gnode.name = StringName(node.name)
 		gnode.title = node.title
-																			 # and then we get to the choices
-		var choice_data_array : Array = node.choices							 # which we grab from the save...
-		for i : int in len(choice_data_array):								 # ...then make a fresh option subnode for each...
-			var op_node : Node = con_node_op.instantiate()
-			gnode.add_child(op_node)											 
+		
+		if node.title == "ConversationNode":									 # and then we get to the choices
+			var choice_data_array : Array = node.choices						 # which we grab from the save...
+			for i : int in len(choice_data_array):							 # ...then make a fresh option subnode for each...
+				var op_node : Node = con_node_op.instantiate()
+				gnode.add_child(op_node)											 
 
-		graph_edit.add_child(gnode,true)										 # ...and add the node to the graph.
+			graph_edit.add_child(gnode,true)									 # ...and add the node to the graph.
 																			 # we need to do this before we fill in the choice data
 																			 # because of the @onready variables in option_sub_node;
 																			 # we can't assign them until the node has been instanced
-		gnode.speaker_line_edit.text = node.speaker 							 # this goes for all this stuff too
-		gnode.inherit_speaker_check.button_pressed = node.inherit_speaker
-		gnode.node_text.text = node.speaker_text								
-		
+			gnode.speaker_line_edit.text = node.speaker 						 # this goes for all this stuff too
+			gnode.inherit_speaker_check.button_pressed = node.inherit_speaker
+			gnode.node_text.text = node.speaker_text								
+			
 																			 # *now* we pour in the choice data for each one
-		var k : int = 0														 # using k to track which choice we're on
-		for i : Node in gnode.get_children():
-			if i is PanelContainer:
-				write_choice_data(i,choice_data_array[k])
-				gnode.set_slot(k+1,false,1,Color.AQUA,true,1,Color.BLACK)
-				k += 1
-		if k != 0:
-			gnode.set_slot(0,true,1,Color.AQUA,false,1,Color.BLACK)
-		else:
-			gnode.set_slot(0,true,1,Color.AQUA,true,1,Color.BLACK)
+			var k : int = 0													 # using k to track which choice we're on
+			for i : Node in gnode.get_children():
+				if i is PanelContainer:
+					write_choice_data(i,choice_data_array[k])
+					gnode.set_slot(k+1,false,1,Color.AQUA,true,1,Color.BLACK)
+					k += 1
+			if k != 0:
+				gnode.set_slot(0,true,1,Color.AQUA,false,1,Color.BLACK)
+			else:
+				gnode.set_slot(0,true,1,Color.AQUA,true,1,Color.BLACK)
+		
+		elif node.title == "ActionNode":										 # the action nodes are comparatively much simpler
+			gnode.condition_box.text = node.action_string
+			graph_edit.add_child(gnode,true)
 		total_nodes += 1
 																			 # and that's the nodes set up
 																			 # all that's left is to hook everything up again!
@@ -286,3 +304,5 @@ func write_choice_data(osn : PanelContainer, data : Dictionary) -> void:
 	osn.hide_check_box.button_pressed = data["hide_check_box"] 
 	osn.replace_check_box.button_pressed = data["replace_check_box"] 
 	osn.replace_text_box.text = data["replace_text_box"]
+
+# EXPORT
