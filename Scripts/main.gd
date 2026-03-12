@@ -1,5 +1,7 @@
 extends Control
 
+# TODO: Add in export functionality, to format graphs into json files.
+
 var con_node : Resource = load("res://Scenes/ConversationNode.tscn")
 var con_node_op : Resource = load("res://Scenes/OptionSubNode.tscn")
 
@@ -29,7 +31,8 @@ var con_node_offset : Vector2 = Vector2(0,-90)
 @onready var right_click_menu : Control = $RightClickNodeMenu
 
 @onready var file_menu : PopupMenu = $MenuBar/FileMenu
-@onready var file_menu_options : Array = ["New","Save","Save As","Load"]
+@onready var file_menu_options : Array = ["New","Save","Save As",
+										 "Load","Export"]
 
 @onready var save_as_modal : FileDialog = $SaveAs
 @onready var load_modal : FileDialog = $Load
@@ -117,6 +120,7 @@ func _on_graph_edit_delete_nodes_request(nodes: Array[StringName]) -> void:
 
 func file_menu_bhvr(id : int) -> void:
 	if id == 0:
+		# New
 		var bhvr : int = await new_file_modal.prompt(true)
 		if bhvr == 0:
 			general_case_save()
@@ -124,6 +128,7 @@ func file_menu_bhvr(id : int) -> void:
 			clear_graph()
 			current_save_path = ""
 	elif id == 1:
+		# Save
 		general_case_save()
 	elif id == 2:
 		# Save As
@@ -131,6 +136,8 @@ func file_menu_bhvr(id : int) -> void:
 	elif id == 3:
 		# Load
 		load_modal.show()
+	elif id == 4:
+		print("Functionality TBA")
 		
 func general_case_save() -> void:
 	if current_save_path == "":
