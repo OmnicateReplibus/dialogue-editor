@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://pbcosx6ufrr0" path="res://Scripts/LogicNode.gd" id="1_878kt"]
 
-[node name="ConditionNode" type="GraphNode" unique_id=2085742489]
-title = "ConditionNode"
+[node name="LogicNode" type="GraphNode" unique_id=2085742489]
+resizable = true
+title = "LogicNode"
 slot/0/left_enabled = false
 slot/0/left_type = 0
 slot/0/left_color = Color(1, 1, 1, 1)

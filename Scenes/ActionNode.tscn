@@ -5,6 +5,7 @@
 [node name="GraphNode" type="GraphNode" unique_id=1450511764]
 offset_right = 9.0
 offset_bottom = 55.0
+resizable = true
 title = "ActionNode"
 slot/0/left_enabled = false
 slot/0/left_type = 0
@@ -21,3 +22,4 @@ script = ExtResource("1_lyua5")
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 placeholder_text = "Action"
+expand_to_text_length = true

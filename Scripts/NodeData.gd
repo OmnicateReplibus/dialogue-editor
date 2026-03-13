@@ -5,7 +5,6 @@ class_name NodeData
 # All the information about each node that's saved
 
 # Universals
-@export var type: StringName
 @export var name: StringName
 @export var title: String
 @export var position_offset: Vector2
@@ -18,3 +17,6 @@ class_name NodeData
 
 # ActionNode
 @export var action_string: String
+
+# LogicNode
+@export var logic_string: String

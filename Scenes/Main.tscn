@@ -80,7 +80,7 @@ layout_mode = 0
 offset_left = 435.0
 offset_right = 599.0
 offset_bottom = 31.0
-text = "Add Condition Node"
+text = "Add Logic Node"
 
 [connection signal="id_pressed" from="MenuBar/FileMenu" to="." method="_on_file_menu_id_pressed"]
 [connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]

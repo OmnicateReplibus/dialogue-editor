@@ -9,13 +9,8 @@ var opsubnode : PackedScene = preload("res://Scenes/OptionSubNode.tscn")
 @onready var inherit_speaker_check : Node = $VBoxContainer/InheritSpeakerCheck
 @onready var node_text : Node = $VBoxContainer/TextEdit
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	set_slot(0,true,1,Color.AQUA,true,1,Color.BLACK)
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta: float) -> void:
-	pass
 	
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("Delete") && selected:

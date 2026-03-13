@@ -1,8 +1,7 @@
 extends Control
 
 # TODO: Add in export functionality, to format graphs into json files.
-# TODO: Set up saving of logic nodes, and make the condition transfer
-# 		from the origin node
+# TODO: Set up saving of logic nodes
 
 var con_node : Resource = load("res://Scenes/ConversationNode.tscn")
 var con_node_op : Resource = load("res://Scenes/OptionSubNode.tscn")
@@ -79,9 +78,21 @@ func remove_connections(node : GraphNode) -> void:
 
 func _on_graph_edit_connection_request(from_node: StringName, from_port: int, 
 		to_node: StringName, to_port: int) -> void:
-	graph_edit.connect_node(from_node, from_port, to_node, to_port)
-														# connect them nodes=
+	graph_edit.connect_node(from_node, from_port, to_node, to_port) 			 # connect them nodes
 	speaker_inheritance_check(from_node, to_node)
+	# while we're here, let's take care of the edge case when we hook a
+	# logic node up to a condition node
+	var origin : Node = graph_edit.find_child(from_node,true,false)
+	if from_node.left(1) == "C" && to_node.left(1) == "L" && \
+											origin.get_children().size() > 1:
+		var endpoint : Node = graph_edit.find_child(to_node,true,false)
+		if origin.get_child(from_port+1).replace_check_box.button_pressed:
+			endpoint.condition_box.editable = false
+			endpoint.condition_box.text = origin.get_child(
+				from_port+1).condition_text_box.text
+			origin.get_child(
+				from_port+1).condition_text_box.text_changed.connect(
+					logic_choice_updater.bind(endpoint))
 
 func speaker_inheritance_check(from_node : StringName, 
 		to_node : StringName) -> void:
@@ -104,25 +115,42 @@ func speaker_inheritance_check(from_node : StringName,
 func _on_graph_edit_disconnection_request(from_node: StringName, from_port: int, 
 		to_node: StringName, to_port: int) -> void:
 	graph_edit.disconnect_node(from_node, from_port, to_node, to_port)
-													# disconnect them nodes
+	# and if the two nodes are a conversation going into a logic, we do this!
+	# we don't need to check for the checkbox because the behaviour won't
+	# change anything if there isn't one (I hope)
+	var origin : Node = graph_edit.find_child(from_node,true,false)
+	if from_node.left(1) == "C" && to_node.left(1) == "L" && \
+											  origin.get_children().size() > 1:
+		graph_edit.find_child(to_node,true,false).condition_box.editable = true
+		origin.get_child(
+			from_port+1).condition_text_box.text_changed.disconnect(
+				logic_choice_updater)
+
 func _on_graph_edit_connection_to_empty(from_node: StringName, from_port: int, 
 			release_position: Vector2) -> void:
-	var new_node : StringName
+	var new_node : Node
 	var new_node_type : StringName
-	var origin : Node = graph_edit.find_child(
-				from_node,true,false)
-	if origin.title == "ConversationNode" && origin.get_children().size() > 1: 
-		if origin.get_child(from_port+1).replace_check_box.toggle_mode:
+	var origin : Node = graph_edit.find_child(from_node,true,false)
+	if origin.title == "ConversationNode" && origin.get_children().size() > 1:
+		if origin.get_child(from_port+1).replace_check_box.button_pressed:
 			new_node_type = "log_node"
 		else:
 			new_node_type = "con_node"
 	else:
 		new_node_type = "con_node"
-	new_node = create_node(new_node_type, release_position).name
-	graph_edit.connect_node(from_node, from_port, new_node, 0)
-	speaker_inheritance_check(from_node, new_node)
+	new_node = create_node(new_node_type, release_position)
+	if new_node_type == "log_node":											 # has to happen after node is created
+		var origin_choice : Node = origin.get_child(from_port+1)
+		new_node.condition_box.text = origin_choice.condition_text_box.text
+		new_node.condition_box.editable = false
+		origin_choice.condition_text_box.text_changed.connect(
+							logic_choice_updater.bind(new_node))
+	graph_edit.connect_node(from_node, from_port, new_node.name, 0)
+	speaker_inheritance_check(from_node, new_node.name)
 	
-
+func logic_choice_updater(new_text : String, target_node : Node) -> void:
+	target_node.condition_box.text = new_text
+	
 func create_node(node_type : String, position_offset : Vector2) -> Node:
 	var node : Node 
 	if node_type == "con_node":
@@ -214,9 +242,9 @@ func save_data(file_name: String) -> bool:
 func read_node_data(node : Node) -> NodeData:
 	var node_data : NodeData = NodeData.new()
 	node_data.name = node.name
-	node_data.title = node.titlez
+	node_data.title = node.title
 	node_data.position_offset = node.position_offset
-	if node_data.name == "ConversationNode":
+	if node_data.title == "ConversationNode":
 		var choice_data : Array = []
 		node_data.speaker = node.speaker_line_edit.text
 		node_data.inherit_speaker = node.inherit_speaker_check.button_pressed
@@ -225,8 +253,10 @@ func read_node_data(node : Node) -> NodeData:
 			if i is PanelContainer:
 				choice_data.append(read_choice_data(i))
 		node_data.choices = choice_data
-	elif node_data.name == "ActionNode":
+	elif node_data.title == "ActionNode":
 		node_data.action_string = node.condition_box.text
+	elif node_data.title == "LogicNode":
+		node_data.logic_string = node.condition_box.text
 	
 	return node_data
 
@@ -268,7 +298,6 @@ func load_data(file_name: String) -> bool:
 
 func init_graph(graph_data: GraphData) -> void:								 # okay
 																			 # are you ready for the pain?
-	
 	clear_graph()															 # first we reset the graph and make sure no nodes are retained
 	node_index = graph_data.node_index
 	
@@ -276,11 +305,13 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 		var gnode : Node 
 		if node.title == "ConversationNode":
 			gnode = con_node.instantiate()								 	 # ...and instance a new node for each one, which we will fill with data
-			gnode.remove_connections.connect(remove_connections.bind(gnode))	 # don't forget to hook it up to the signal!
-		elif node.title == "ActionNode":
+			gnode.remove_connections.connect(remove_connections.bind(gnode))	 # don't forget to hook the conversation_node up to the signal that stops
+		elif node.title == "ActionNode":										 # it from shitting the bed when you remove an option with a connection
 			gnode = act_node.instantiate()
+		elif node.title == "LogicNode":
+			gnode = log_node.instantiate()
 		
-		gnode.position_offset = node.position_offset							 # we begin with the basic stuff....
+		gnode.position_offset = node.position_offset							 # we begin with the basic stuff, common to all nodes...
 		gnode.name = StringName(node.name)
 		gnode.title = node.title
 		
@@ -310,9 +341,12 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 			else:
 				gnode.set_slot(0,true,1,Color.AQUA,true,1,Color.BLACK)
 		
-		elif node.title == "ActionNode":										 # the action nodes are comparatively much simpler
-			gnode.condition_box.text = node.action_string
+		elif node.title == "ActionNode":										 # the action nodes are comparatively much simpler...
 			graph_edit.add_child(gnode,true)
+			gnode.condition_box.text = node.action_string
+		elif node.title == "LogicNode":										 # ...as are the logic nodes
+			graph_edit.add_child(gnode,true)
+			gnode.condition_box.text = node.logic_string
 		total_nodes += 1
 																			 # and that's the nodes set up
 																			 # all that's left is to hook everything up again!

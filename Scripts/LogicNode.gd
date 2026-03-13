@@ -7,6 +7,9 @@ func _ready() -> void:
 	set_slot(1,false,1,Color.AQUA,true,1,Color.BLACK)
 	set_slot(2,false,1,Color.AQUA,true,1,Color.BLACK)
 
-# TODO: Make it so when you drag off from a connection with the "alternate
-# option" checkbox checked, this node is created rather than the 
-# standard conversation_node
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("Delete") && selected:
+		_on_delete_request()
+
+func _on_delete_request() -> void:
+	queue_free()
