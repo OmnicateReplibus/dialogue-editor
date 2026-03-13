@@ -48,7 +48,7 @@ func _ready() -> void:
 		file_menu.add_item(i)
 		
 func _input(event: InputEvent) -> void:
-	if event.is_action("SaveShortcut"):
+	if event.is_action("SaveShortcut", true):
 		general_case_save()
 
 func _on_add_con_button_pressed() -> void: 						
