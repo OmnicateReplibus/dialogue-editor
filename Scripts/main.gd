@@ -1,7 +1,8 @@
 extends Control
 
 # TODO: Add in export functionality, to format graphs into json files.
-# TODO: Add additional nodes when selecting "replace" on conversation_nodes
+# TODO: Set up saving of logic nodes, and make the condition transfer
+# 		from the origin node
 
 var con_node : Resource = load("res://Scenes/ConversationNode.tscn")
 var con_node_op : Resource = load("res://Scenes/OptionSubNode.tscn")
@@ -106,12 +107,18 @@ func _on_graph_edit_disconnection_request(from_node: StringName, from_port: int,
 													# disconnect them nodes
 func _on_graph_edit_connection_to_empty(from_node: StringName, from_port: int, 
 			release_position: Vector2) -> void:
-	var new_node : StringName 
-	if true:
-		# TODO: Replace this with the logic that checks whether
-		# the slot pertains to an option with the alt_dialogue choice selected,
-		# and if so create a logic node instead
-		new_node = create_node("con_node", release_position).name
+	var new_node : StringName
+	var new_node_type : StringName
+	var origin : Node = graph_edit.find_child(
+				from_node,true,false)
+	if origin.title == "ConversationNode" && origin.get_children().size() > 1: 
+		if origin.get_child(from_port+1).replace_check_box.toggle_mode:
+			new_node_type = "log_node"
+		else:
+			new_node_type = "con_node"
+	else:
+		new_node_type = "con_node"
+	new_node = create_node(new_node_type, release_position).name
 	graph_edit.connect_node(from_node, from_port, new_node, 0)
 	speaker_inheritance_check(from_node, new_node)
 	
