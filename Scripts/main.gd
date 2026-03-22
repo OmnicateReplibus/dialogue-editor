@@ -1,13 +1,11 @@
 @tool
 extends Control
 
-# TODO: Add in export functionality, to format graphs into json files.
-# TODO: Set up saving of logic nodes
-
 var con_node : Resource = load("res://Scenes/Nodes/ConversationNode.tscn")
 var con_node_op : Resource = load("res://Scenes/Nodes/OptionSubNode.tscn")
 var act_node : Resource = load("res://Scenes/Nodes/ActionNode.tscn")
 var log_node : Resource = load("res://Scenes/Nodes/LogicNode.tscn")
+var skill_node : Resource = load("res://Scenes/Nodes/SkillNode.tscn")
 var start_node : Resource = load("res://Scenes/Nodes/StartNode.tscn")
 var end_node : Resource = load("res://Scenes/Nodes/EndNode.tscn")
 
@@ -26,6 +24,7 @@ var total_nodes : int = 0
 var con_node_offset : Vector2 = Vector2(0,-110)
 var act_node_offset : Vector2 = Vector2(0,-40)
 var log_node_offset : Vector2 = Vector2(0,-40)
+var skill_node_offset : Vector2 = Vector2(0,-40)
 var start_node_offset : Vector2 = Vector2(0,-40)
 var end_node_offset : Vector2 = Vector2(0,-40)
 
@@ -72,8 +71,7 @@ func _on_node_menu_id_pressed(id: int) -> void:
 		create_node("log_node",screen_scale)
 	elif id == 3:
 		# Skill
-#		create_node("skill_node",screen_scale)
-		print("Functionality TBA")
+		create_node("skill_node",screen_scale)
 	elif id == 4:
 		# Start
 		var check : bool = true
@@ -113,15 +111,10 @@ func _on_graph_edit_connection_request(from_node: StringName, from_port: int,
 			endpoint.condition_box.editable = false
 			endpoint.condition_box.text = origin.get_child(
 				from_port+1).condition_text_box.text
-		origin_child.condition_text_box.text_changed.connect(
-					logic_choice_updater.bind(endpoint))
-		origin_child.replace_check_box.toggled.connect(
-					logic_choice_box_updater.bind(endpoint).bind(
-							origin_child.condition_text_box.text))
 
 func speaker_inheritance_check(from_node : StringName, 
 		to_node : StringName) -> void:
-	if from_node.left(1) == "C":
+	if from_node.left(1) == "C" && to_node.left(1) == "C":
 		if graph_edit.get_node(
 			NodePath(from_node)).get_node(inh_speaker_box).button_pressed:
 		# if the inherit speaker button is checked:
@@ -147,11 +140,6 @@ func _on_graph_edit_disconnection_request(from_node: StringName, from_port: int,
 	if from_node.left(1) == "C" && to_node.left(1) == "L" && \
 											  origin.get_children().size() > 1:
 		graph_edit.find_child(to_node,true,false).condition_box.editable = true
-		var origin_child : Node = origin.get_child(from_port+1)
-		origin_child.condition_text_box.text_changed.disconnect(
-				logic_choice_updater)
-		origin_child.replace_check_box.toggled.disconnect(
-				logic_choice_box_updater)
 
 func _on_graph_edit_connection_to_empty(from_node: StringName, from_port: int, 
 			release_position: Vector2) -> void:
@@ -170,22 +158,9 @@ func _on_graph_edit_connection_to_empty(from_node: StringName, from_port: int,
 		var origin_choice : Node = origin.get_child(from_port+1)
 		new_node.condition_box.text = origin_choice.condition_text_box.text
 		new_node.condition_box.editable = false
-		origin_choice.condition_text_box.text_changed.connect(
-							logic_choice_updater.bind(new_node))
-		origin_choice.replace_check_box.toggled.connect(
-							logic_choice_box_updater.bind(new_node, 
-								origin_choice.condition_text_box.text))
+
 	graph_edit.connect_node(from_node, from_port, new_node.name, 0)
-	speaker_inheritance_check(from_node, new_node.name)
-	
-func logic_choice_updater(new_text : String, target_node : Node) -> void:
-	if !target_node.condition_box.editable:
-		target_node.condition_box.text = new_text
-	
-func logic_choice_box_updater(is_active : bool, update_text : String, 
-		target_node : Node) -> void:
-	target_node.condition_box.editable = !is_active
-	logic_choice_updater(update_text, target_node)
+	speaker_inheritance_check(from_node, new_node.name)	
 
 func create_node(node_type : String, position_offset : Vector2) -> Node:
 	var node : Node 
@@ -204,6 +179,10 @@ func create_node(node_type : String, position_offset : Vector2) -> Node:
 		node = log_node.instantiate()
 		node.name = "LN" + str(node_index)	
 		node_offset = log_node_offset
+	elif node_type == "skill_node":
+		node = skill_node.instantiate()
+		node.name = "SN" + str(node_index)	
+		node_offset = skill_node_offset
 	elif node_type == "start_node":
 		node = start_node.instantiate()
 		node.name = "BN" + str(node_index)
@@ -222,6 +201,8 @@ func _on_graph_edit_delete_nodes_request(nodes: Array[StringName]) -> void:
 	total_nodes -= len(nodes)
 	
 # SAVING, LOADING & EXPORTING #
+
+# TODO: Set up saving, loading & exporting of skill nodes
 
 # MENU
 
@@ -392,7 +373,6 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 		else:
 			graph_edit.add_child(gnode,true)
 			if node.title == "ActionNode":									 # the action nodes are comparatively much simpler...
-				graph_edit.add_child(gnode,true)
 				gnode.action_box.text = node.action_string
 			elif node.title == "LogicNode":									 # ...as are the logic nodes
 				gnode.condition_box.text = node.logic_string
@@ -463,9 +443,12 @@ func export() -> void:
 						node_json["goes_to"] = j["to_node"]
 			elif node.title == "LogicNode":
 				node_json["condition"] = node.condition_box.text
-				
-				# TODO: finish
-				 
+				for j : Dictionary in graph_edit.connections:
+					if j["from_node"] == node_name:
+						if j["from_port"] == 0:
+							node_json["true_goes_to"] = j["to_node"]
+						elif j["from_port"] == 1:
+							node_json["false_goes_to"] = j["to_node"]
 			elif node.title == "StartNode":
 				for j : Dictionary in graph_edit.connections:
 					if j["from_node"] == node_name:
