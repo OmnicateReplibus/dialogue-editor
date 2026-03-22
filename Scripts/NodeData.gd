@@ -21,4 +21,4 @@ class_name NodeData
 
 # LogicNode
 @export var logic_string: String
-@export var editable: String
+@export var editable: bool

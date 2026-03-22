@@ -6,7 +6,8 @@ const MainPanel : PackedScene = preload("res://Scenes/Main.tscn")
 var main_panel_instance : Node
 
 var file_menu_options : Array = ["New","Save","Save As","Load","Export"]
-var node_menu_options : Array = ["Conversation","Action","Logic"]
+var node_menu_options : Array = ["Conversation","Action","Logic",
+								"Skill","Start","End"]
 
 signal is_visible
 
@@ -51,7 +52,6 @@ func _make_visible(visible):
 	if main_panel_instance:
 		main_panel_instance.visible = visible
 		
-
 func _get_plugin_name():
 	return "Verse"
 

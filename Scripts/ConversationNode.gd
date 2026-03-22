@@ -3,7 +3,7 @@ extends GraphNode
 
 signal remove_connections
 
-var opsubnode : PackedScene = preload("res://Scenes/OptionSubNode.tscn")
+var opsubnode : PackedScene = preload("res://Scenes/Nodes/OptionSubNode.tscn")
 
 # all the components needed to be accessed when saving
 @onready var speaker_line_edit : Node = $VBoxContainer/HBoxContainer/SpeakerLineEdit

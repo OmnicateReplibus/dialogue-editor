@@ -4,10 +4,12 @@ extends Control
 # TODO: Add in export functionality, to format graphs into json files.
 # TODO: Set up saving of logic nodes
 
-var con_node : Resource = load("res://Scenes/ConversationNode.tscn")
-var con_node_op : Resource = load("res://Scenes/OptionSubNode.tscn")
-var act_node : Resource = load("res://Scenes/ActionNode.tscn")
-var log_node : Resource = load("res://Scenes/LogicNode.tscn")
+var con_node : Resource = load("res://Scenes/Nodes/ConversationNode.tscn")
+var con_node_op : Resource = load("res://Scenes/Nodes/OptionSubNode.tscn")
+var act_node : Resource = load("res://Scenes/Nodes/ActionNode.tscn")
+var log_node : Resource = load("res://Scenes/Nodes/LogicNode.tscn")
+var start_node : Resource = load("res://Scenes/Nodes/StartNode.tscn")
+var end_node : Resource = load("res://Scenes/Nodes/EndNode.tscn")
 
 # this ensures there are never any node-naming conflicts
 # by giving each node a unique identifier
@@ -24,6 +26,8 @@ var total_nodes : int = 0
 var con_node_offset : Vector2 = Vector2(0,-110)
 var act_node_offset : Vector2 = Vector2(0,-40)
 var log_node_offset : Vector2 = Vector2(0,-40)
+var start_node_offset : Vector2 = Vector2(0,-40)
+var end_node_offset : Vector2 = Vector2(0,-40)
 
 @onready var graph_edit : GraphEdit = $GraphEdit
 @onready var graph_edit_path : NodePath = graph_edit.get_path()
@@ -54,18 +58,34 @@ func _input(event: InputEvent) -> void:
 			general_case_save()
 
 func _on_node_menu_id_pressed(id: int) -> void:
+	var screen_scale : Vector2 = get_viewport_rect().size / 3
 	if id == 0:
 		# Conversation
-		var new_con_node : Node = create_node("con_node", 
-			get_viewport_rect().size / 2)
+		var new_con_node : Node = create_node("con_node",screen_scale)
 		new_con_node.remove_connections.connect(
 			remove_connections.bind(new_con_node))
 	elif id == 1:
 		# Action
-		create_node("act_node", get_viewport_rect().size / 2)
+		create_node("act_node",screen_scale)
 	elif id == 2:
 		# Logic
-		create_node("log_node", get_viewport_rect().size / 2)
+		create_node("log_node",screen_scale)
+	elif id == 3:
+		# Skill
+#		create_node("skill_node",screen_scale)
+		print("Functionality TBA")
+	elif id == 4:
+		# Start
+		var check : bool = true
+		for node : Node in graph_edit.get_children():
+			if node is GraphNode and node.name.left(1) == "B":
+				print("Only one start node allowed.")
+				check = false
+		if check:
+			create_node("start_node",screen_scale)
+	elif id == 5:
+		# End
+		create_node("end_node",screen_scale)
 
 func remove_connections(node : GraphNode) -> void:
 	if node.get_child_count() > 2:
@@ -79,7 +99,8 @@ func remove_connections(node : GraphNode) -> void:
 
 func _on_graph_edit_connection_request(from_node: StringName, from_port: int, 
 		to_node: StringName, to_port: int) -> void:
-	graph_edit.connect_node(from_node, from_port, to_node, to_port) 			 # connect them nodes
+	# connect them nodes
+	graph_edit.connect_node(from_node, from_port, to_node, to_port) 			 
 	speaker_inheritance_check(from_node, to_node)
 	# while we're here, let's take care of the edge case when we hook a
 	# logic node up to a condition node
@@ -168,21 +189,30 @@ func logic_choice_box_updater(is_active : bool, update_text : String,
 
 func create_node(node_type : String, position_offset : Vector2) -> Node:
 	var node : Node 
+	var node_offset : Vector2
+	var node_spawn_pos : Vector2 = ((graph_edit.scroll_offset + position_offset
+			) / graph_edit.zoom)
 	if node_type == "con_node":
 		node = con_node.instantiate() 	
 		node.name = "CN" + str(node_index)								
-		node.position_offset += ((graph_edit.scroll_offset + position_offset
-			) / graph_edit.zoom) + con_node_offset
+		node_offset = con_node_offset
 	elif node_type == "act_node":
 		node = act_node.instantiate()
 		node.name = "AN" + str(node_index)	
-		node.position_offset += ((graph_edit.scroll_offset + position_offset
-			) / graph_edit.zoom) + act_node_offset
+		node_offset = act_node_offset
 	elif node_type == "log_node":
 		node = log_node.instantiate()
 		node.name = "LN" + str(node_index)	
-		node.position_offset += ((graph_edit.scroll_offset + position_offset
-			) / graph_edit.zoom) + act_node_offset
+		node_offset = log_node_offset
+	elif node_type == "start_node":
+		node = start_node.instantiate()
+		node.name = "BN" + str(node_index)
+		node_offset = start_node_offset
+	elif node_type == "end_node":
+		node = end_node.instantiate()
+		node.name = "EN" + str(node_index)	
+		node_offset = end_node_offset
+	node.position_offset += node_spawn_pos + node_offset
 	node_index += 1 
 	graph_edit.add_child(node)
 	total_nodes += 1
@@ -267,11 +297,11 @@ func read_node_data(node : Node) -> NodeData:
 				choice_data.append(read_choice_data(i))
 		node_data.choices = choice_data
 	elif node_data.title == "ActionNode":
-		node_data.action_string = node.condition_box.text
+		node_data.action_string = node.action_box.text
 	elif node_data.title == "LogicNode":
 		node_data.logic_string = node.condition_box.text
 		node_data.editable = node.condition_box.editable
-	
+		
 	return node_data
 
 func read_choice_data(osn : PanelContainer) -> Dictionary:
@@ -324,6 +354,10 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 			gnode = act_node.instantiate()
 		elif node.title == "LogicNode":
 			gnode = log_node.instantiate()
+		elif node.title == "StartNode":
+			gnode = start_node.instantiate()
+		elif node.title == "EndNode":
+			gnode = end_node.instantiate()
 		
 		gnode.position_offset = node.position_offset							 # we begin with the basic stuff, common to all nodes...
 		gnode.name = StringName(node.name)
@@ -355,13 +389,14 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 			else:
 				gnode.set_slot(0,true,1,Color.AQUA,true,1,Color.RED)
 		
-		elif node.title == "ActionNode":										 # the action nodes are comparatively much simpler...
+		else:
 			graph_edit.add_child(gnode,true)
-			gnode.condition_box.text = node.action_string
-		elif node.title == "LogicNode":										 # ...as are the logic nodes
-			graph_edit.add_child(gnode,true)
-			gnode.condition_box.text = node.logic_string
-			gnode.condition_box.editable = node.editable
+			if node.title == "ActionNode":									 # the action nodes are comparatively much simpler...
+				graph_edit.add_child(gnode,true)
+				gnode.action_box.text = node.action_string
+			elif node.title == "LogicNode":									 # ...as are the logic nodes
+				gnode.condition_box.text = node.logic_string
+				gnode.condition_box.editable = node.editable
 		total_nodes += 1
 																			 # and that's the nodes set up
 																			 # all that's left is to hook everything up again!
@@ -385,22 +420,54 @@ func export() -> void:
 	for node : Node in nodes:
 		if node is GraphNode:
 			var node_json : Dictionary = {}
+			var node_name : String = StringName(node.name)
+			node_json["name"] = node_name
+				# we define this as a variable because we use it later as a key
+			node_json["title"] = node.title
 			if node.title == "ConversationNode":
 				node_json["speaker"] = node.speaker_line_edit.text
 				node_json["text"] = node.node_text.text
-				for i : Node in node.get_children():
-					if i is PanelContainer:
-						var choice_dict_raw : Dictionary = read_choice_data(i)
-						var choice_dict : Dictionary = {}
-						choice_dict["text"] = choice_dict_raw[
-														 "choice_text_box"]
-						if choice_dict_raw["condition_check_box"]:
-							choice_dict["condition"] = choice_dict_raw[
-														 "condition_text_box"]
-							choice_dict["hide"] = choice_dict_raw[
-														 "hide_check_box"]
-							if choice_dict_raw["replace_check_box"]:
-								choice_dict["replace_with"] = choice_dict_raw[
-														 "replace_text_box"]
-						print(choice_dict_raw)
+				var has_choices : bool = (node.get_children().size() > 1)
+				if has_choices:
+					var choice_array : Array 
+					for i : Node in node.get_children():
+						if i is PanelContainer:
+							var choice_dict_raw : Dictionary = \
+								read_choice_data(i)
+							var choice_dict : Dictionary = {}
+							var choice_index : int = i.get_index()-1
+							choice_dict["text"] = choice_dict_raw[
+														"choice_text_box"]
+							if choice_dict_raw["condition_check_box"]:
+								choice_dict["condition"] = choice_dict_raw[
+														"condition_text_box"]
+								choice_dict["hide"] = choice_dict_raw[
+														"hide_check_box"]
+								if choice_dict_raw["replace_check_box"]:
+									choice_dict["replace_with"] = \
+										choice_dict_raw["replace_text_box"]
+							for j : Dictionary in graph_edit.connections:
+								if j["from_node"] == node_name && \
+								   j["from_port"] == choice_index:
+									choice_dict["goes_to"] = j["to_node"]
+							choice_array.append(choice_dict)
+					node_json["choices"] = choice_array
+				elif !has_choices:
+					for j : Dictionary in graph_edit.connections:
+						if j["from_node"] == node_name:
+							node_json["goes_to"] = j["to_node"]
+			elif node.title == "ActionNode":
+				node_json["action"] = node.action_box.text
+				for j : Dictionary in graph_edit.connections:
+					if j["from_node"] == node_name:
+						node_json["goes_to"] = j["to_node"]
+			elif node.title == "LogicNode":
+				node_json["condition"] = node.condition_box.text
+				
+				# TODO: finish
+				 
+			elif node.title == "StartNode":
+				for j : Dictionary in graph_edit.connections:
+					if j["from_node"] == node_name:
+						node_json["goes_to"] = j["to_node"]
 			print(node_json)
