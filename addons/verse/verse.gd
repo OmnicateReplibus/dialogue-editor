@@ -1,7 +1,7 @@
 @tool
 extends EditorPlugin
 
-const MainPanel : PackedScene = preload("res://Scenes/Main.tscn")
+const MainPanel : PackedScene = preload("res://addons/verse/Scenes/Main.tscn")
 
 var main_panel_instance : Node
 

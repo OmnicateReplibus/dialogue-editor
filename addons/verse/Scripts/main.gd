@@ -1,13 +1,13 @@
 @tool
 extends Control
 
-var con_node : Resource = load("res://Scenes/Nodes/ConversationNode.tscn")
-var con_node_op : Resource = load("res://Scenes/Nodes/OptionSubNode.tscn")
-var act_node : Resource = load("res://Scenes/Nodes/ActionNode.tscn")
-var log_node : Resource = load("res://Scenes/Nodes/LogicNode.tscn")
-var skill_node : Resource = load("res://Scenes/Nodes/SkillNode.tscn")
-var start_node : Resource = load("res://Scenes/Nodes/StartNode.tscn")
-var end_node : Resource = load("res://Scenes/Nodes/EndNode.tscn")
+var con_node : Resource = load("res://addons/verse/Scenes/Nodes/ConversationNode.tscn")
+var con_node_op : Resource = load("res://addons/verse/Scenes/Nodes/OptionSubNode.tscn")
+var act_node : Resource = load("res://addons/verse/Scenes/Nodes/ActionNode.tscn")
+var log_node : Resource = load("res://addons/verse/Scenes/Nodes/LogicNode.tscn")
+var skill_node : Resource = load("res://addons/verse/Scenes/Nodes/SkillNode.tscn")
+var start_node : Resource = load("res://addons/verse/Scenes/Nodes/StartNode.tscn")
+var end_node : Resource = load("res://addons/verse/Scenes/Nodes/EndNode.tscn")
 
 # this ensures there are never any node-naming conflicts
 # by giving each node a unique identifier
@@ -278,6 +278,7 @@ func read_node_data(node : Node) -> NodeData:
 		for i : Node in node.get_children():
 			if i is PanelContainer:
 				choice_data.append(read_choice_data(i))
+				node_data.has_choices = true
 		node_data.choices = choice_data
 	elif node_data.title == "ActionNode":
 		node_data.action_string = node.action_box.text
@@ -304,7 +305,7 @@ func read_choice_data(osn : PanelContainer) -> Dictionary:
 			"replace_check_box": osn.replace_check_box.button_pressed, 
 			"replace_text_box": osn.replace_text_box.text}
 
-func clear_graph() -> void:
+func clear_graph(with_start : bool = true) -> void:
 	graph_edit.clear_connections()
 	var nodes : Array = graph_edit.get_children()
 	for node : Node in nodes:
@@ -314,7 +315,8 @@ func clear_graph() -> void:
 	node_index = 0
 	total_nodes = 0
 	graph_edit.scroll_offset = Vector2(0,0)
-	create_node("start_node",get_viewport_rect().size / 5)
+	if with_start:
+		create_node("start_node",get_viewport_rect().size / 5)
 
 # LOAD
 
@@ -334,7 +336,7 @@ func load_data(file_name: String) -> bool:
 
 func init_graph(graph_data: GraphData) -> void:								 # okay
 																			 # are you ready for the pain?
-	clear_graph()															 # first we reset the graph and make sure no nodes are retained
+	clear_graph(false)														 # first we reset the graph and make sure no nodes are retained
 	node_index = graph_data.node_index
 	
 	

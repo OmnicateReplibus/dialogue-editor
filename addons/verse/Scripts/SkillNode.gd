@@ -14,9 +14,13 @@ var margin_side_value : int = 0
 
 var text_box_width : int = 500
 
-var skill_class_array : Array = ["Body","Mind"]
-var skill_dict : Dictionary = {"Body":["Arm","Verdure"],
-							  "Mind":["Three Churches","Natural Science"]}
+var skill_class_array : Array = ["Persona","Emotion","Cognition","Chassis"]
+var skill_dict : Dictionary = {
+	"Persona":["Magnetism","Artifice","Tact"],
+	"Emotion":["Piety","Empathy","Defiance"],
+	"Cognition":["Three Churches","Natural Science","Insight"],
+	"Chassis":["Arm","Fibre","Agility"]
+}
 
 func _ready() -> void:
 	

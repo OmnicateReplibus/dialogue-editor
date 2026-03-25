@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://rvm860n2yqxb"]
 
-[ext_resource type="Script" uid="uid://btklfdiwgncd1" path="res://Scripts/confirmation_modal.gd" id="1_mf5cn"]
+[ext_resource type="Script" uid="uid://btklfdiwgncd1" path="res://addons/verse/Scripts/confirmation_modal.gd" id="1_mf5cn"]
 
 [node name="ConfirmationModal" type="Control" unique_id=608655252]
 layout_mode = 3

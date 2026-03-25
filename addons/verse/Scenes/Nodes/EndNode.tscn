@@ -1,19 +1,19 @@
 [gd_scene format=3 uid="uid://damfcx2n1q2ix"]
 
-[ext_resource type="Script" uid="uid://44xjpnygmhjj" path="res://Scripts/EndNode.gd" id="1_dyv3a"]
+[ext_resource type="Script" uid="uid://44xjpnygmhjj" path="res://addons/verse/Scripts/EndNode.gd" id="1_rs45d"]
 
 [node name="EndNode" type="GraphNode" unique_id=2053864340]
 title = "EndNode"
-slot/0/left_enabled = false
-slot/0/left_type = 0
-slot/0/left_color = Color(1, 1, 1, 1)
+slot/0/left_enabled = true
+slot/0/left_type = 1
+slot/0/left_color = Color(0, 1, 1, 1)
 slot/0/left_icon = null
 slot/0/right_enabled = false
-slot/0/right_type = 0
-slot/0/right_color = Color(1, 1, 1, 1)
+slot/0/right_type = 1
+slot/0/right_color = Color(1, 0, 0, 1)
 slot/0/right_icon = null
 slot/0/draw_stylebox = true
-script = ExtResource("1_dyv3a")
+script = ExtResource("1_rs45d")
 
 [node name="Label" type="Label" parent="." unique_id=850354897]
 layout_mode = 2

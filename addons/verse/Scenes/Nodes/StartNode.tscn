@@ -1,20 +1,20 @@
 [gd_scene format=3 uid="uid://cj8db87t7sjl8"]
 
-[ext_resource type="Script" uid="uid://w6bpwrv3kc3h" path="res://Scripts/StartNode.gd" id="1_itd2j"]
+[ext_resource type="Script" uid="uid://w6bpwrv3kc3h" path="res://addons/verse/Scripts/StartNode.gd" id="1_8rtb8"]
 
 [node name="StartNode" type="GraphNode" unique_id=1604526534]
 custom_minimum_size = Vector2(50, 25)
 title = "StartNode"
 slot/0/left_enabled = false
-slot/0/left_type = 0
-slot/0/left_color = Color(1, 1, 1, 1)
+slot/0/left_type = 1
+slot/0/left_color = Color(0, 1, 1, 1)
 slot/0/left_icon = null
-slot/0/right_enabled = false
-slot/0/right_type = 0
-slot/0/right_color = Color(1, 1, 1, 1)
+slot/0/right_enabled = true
+slot/0/right_type = 1
+slot/0/right_color = Color(1, 0, 0, 1)
 slot/0/right_icon = null
 slot/0/draw_stylebox = true
-script = ExtResource("1_itd2j")
+script = ExtResource("1_8rtb8")
 
 [node name="Label" type="Label" parent="." unique_id=1143267925]
 layout_mode = 2
