@@ -1,5 +1,6 @@
 @tool
 extends PanelContainer
+class_name OptionSubNode
 
 @onready var choice_text_box : TextEdit = $VBoxContainer/choice_text
 @onready var condition_check_box : CheckBox = $VBoxContainer/condition
@@ -10,6 +11,8 @@ extends PanelContainer
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
 	condition_text_box.hide()
 	hide_check_box.hide()
 	replace_check_box.hide()

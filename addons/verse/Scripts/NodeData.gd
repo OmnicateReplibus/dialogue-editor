@@ -15,7 +15,7 @@ class_name NodeData
 @export var inherit_speaker : bool
 @export var speaker_text : String
 @export var has_choices : bool = false
-@export var choices : Array
+@export var choices : Array[Dictionary]
 
 # ActionNode
 @export var action_string : String

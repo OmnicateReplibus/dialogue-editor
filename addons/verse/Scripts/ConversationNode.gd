@@ -1,5 +1,6 @@
 @tool
 extends GraphNode
+class_name ConversationNode
 
 signal remove_connections
 
@@ -52,3 +53,12 @@ func remove_choice() -> void:
 			# don't love this but it's because queue_free doesn't remove the 
 			# final choice box from the child list in time (if at all)
 			set_slot(0,true,1,Color.AQUA,true,1,Color.RED)
+
+func write_choice_data(osn : OptionSubNode, data : Dictionary) -> void:
+	# osn = option_sub_node
+	osn.choice_text_box.text = data["choice_text_box"]
+	osn.condition_check_box.button_pressed = data["condition_check_box"]
+	osn.condition_text_box.text = data["condition_text_box"] 
+	osn.hide_check_box.button_pressed = data["hide_check_box"] 
+	osn.replace_check_box.button_pressed = data["replace_check_box"] 
+	osn.replace_text_box.text = data["replace_text_box"]

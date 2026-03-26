@@ -340,7 +340,7 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 	node_index = graph_data.node_index
 	
 	
-	for node : Resource in graph_data.nodes: 									 # then we check the save for each saved node...
+	for node in graph_data.nodes: 									 # then we check the save for each saved node...
 		var gnode : Node 
 		if node.title == "ConversationNode":
 			gnode = con_node.instantiate()								 	 # ...and instance a new node for each one, which we will fill with data
@@ -361,30 +361,7 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 		gnode.title = node.title
 		
 		if node.title == "ConversationNode":									 # and then we get to the choices
-			var choice_data_array : Array = node.choices						 # which we grab from the save...
-			for i : int in len(choice_data_array):							 # ...then make a fresh option subnode for each...
-				var op_node : Node = con_node_op.instantiate()
-				gnode.add_child(op_node)											 
-
-			graph_edit.add_child(gnode,true)									 # ...and add the node to the graph.
-																			 # we need to do this before we fill in the choice data
-																			 # because of the @onready variables in option_sub_node;
-																			 # we can't assign them until the node has been instanced
-			gnode.speaker_line_edit.text = node.speaker 						 # this goes for all this stuff too
-			gnode.inherit_speaker_check.button_pressed = node.inherit_speaker
-			gnode.node_text.text = node.speaker_text								
-			
-																			 # *now* we pour in the choice data for each one
-			var k : int = 0													 # using k to track which choice we're on
-			for i : Node in gnode.get_children():
-				if i is PanelContainer:
-					write_choice_data(i,choice_data_array[k])
-					gnode.set_slot(k+1,false,1,Color.AQUA,true,1,Color.RED)
-					k += 1
-			if k != 0:
-				gnode.set_slot(0,true,1,Color.AQUA,false,1,Color.RED)
-			else:
-				gnode.set_slot(0,true,1,Color.AQUA,true,1,Color.RED)
+			create_conversation_node(gnode, node)
 		else:
 			graph_edit.add_child(gnode,true)
 			if node.title == "ActionNode":									 # the action nodes are comparatively much simpler...
@@ -408,15 +385,36 @@ func init_graph(graph_data: GraphData) -> void:								 # okay
 	for con : Dictionary in graph_data.connections:
 		var _e : int = graph_edit.connect_node(con.from_node, 
 		 	con.from_port, con.to_node, con.to_port, con.keep_alive)
+			
+func create_conversation_node(gnode:ConversationNode, node:NodeData):
+	var choice_data_array : Array = node.choices						 # which we grab from the save...
+	for i : int in len(choice_data_array):							 # ...then make a fresh option subnode for each...
+		gnode.add_choice()
+		#var op_node : Node = con_node_op.instantiate()
+		#gnode.add_child(op_node)											 
+	graph_edit.add_child(gnode,true)									 # ...and add the node to the graph.
+																	 # we need to do this before we fill in the choice data
+																	 # because of the @onready variables in option_sub_node;
+																	 # we can't assign them until the node has been instanced
+	
+	gnode.node_text.text = node.speaker_text								
+	gnode.speaker_line_edit.text = node.speaker 						 # this goes for all this stuff too
+	gnode.inherit_speaker_check.button_pressed = node.inherit_speaker
+	var k : int = 0													 # using k to track which choice we're on
 
-func write_choice_data(osn : PanelContainer, data : Dictionary) -> void:
-	# osn = option_sub_node
-	osn.choice_text_box.text = data["choice_text_box"]
-	osn.condition_check_box.button_pressed = data["condition_check_box"]
-	osn.condition_text_box.text = data["condition_text_box"] 
-	osn.hide_check_box.button_pressed = data["hide_check_box"] 
-	osn.replace_check_box.button_pressed = data["replace_check_box"] 
-	osn.replace_text_box.text = data["replace_text_box"]
+	for i : Node in gnode.get_children():
+		if i is PanelContainer:
+			gnode.write_choice_data(i,choice_data_array[k])
+			gnode.set_slot(k+1,false,1,Color.AQUA,true,1,Color.RED)
+			k += 1
+	if k != 0:
+		gnode.set_slot(0,true,1,Color.AQUA,false,1,Color.RED)
+	else:
+		gnode.set_slot(0,true,1,Color.AQUA,true,1,Color.RED)
+																	 # *now* we pour in the choice data for each one
+	await get_tree().process_frame
+	gnode.size = Vector2.ZERO
+		
 
 # EXPORT
 

@@ -1,6 +1,5 @@
 @tool
 extends Resource
-
 class_name GraphData
 
 @export var node_index : int
